@@ -408,7 +408,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 
 
 
-
+void ble_store_config_init(void);
 
 
 static void
@@ -448,7 +448,14 @@ bleprph_on_sync(void)
 }
 
 
+void bleprph_host_task(void *param)
+{
+    ESP_LOGI(TAG, "BLE Host Task Started");
+    /* This function will return only when nimble_port_stop() is executed */
+    nimble_port_run();
 
+    nimble_port_freertos_deinit();
+}
 
 void app_main()
 {
@@ -495,6 +502,13 @@ void app_main()
     rc = gatt_svr_init();
     assert(rc == 0);
 
+     /* Set the default device name. */
+     rc = ble_svc_gap_device_name_set("nimble-bleprph");
+     assert(rc == 0);
+     /* XXX Need to have template for store */
+     ble_store_config_init();
+ 
+     nimble_port_freertos_init(bleprph_host_task);
 
 
     }
