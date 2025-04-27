@@ -47,6 +47,9 @@ static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 
 #define CONFIG_XCLK_FREQ 18000000 
 
+static const ble_uuid128_t gatt_svr_svc_sec_test_uuid =
+    BLE_UUID128_INIT(0x2d, 0x71, 0xa2, 0x59, 0xb4, 0x58, 0xc8, 0x12,
+                     0x99, 0x99, 0x43, 0x95, 0x12, 0x2f, 0x46, 0x59);
 
 
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
@@ -185,7 +188,8 @@ bleprph_advertise(void)
 {
     struct ble_gap_adv_params adv_params;
     struct ble_hs_adv_fields fields;
-    const char *name;
+    struct ble_hs_adv_fields rsp_fields;
+ 
     int rc;
 
     /**
@@ -212,21 +216,29 @@ bleprph_advertise(void)
     fields.tx_pwr_lvl_is_present = 1;
     fields.tx_pwr_lvl = BLE_HS_ADV_TX_PWR_LVL_AUTO;
 
-    name = ble_svc_gap_device_name();
-    fields.name = (uint8_t *)name;
-    fields.name_len = strlen(name);
-    fields.name_is_complete = 1;
 
-    fields.uuids16 = (ble_uuid16_t[]) {
-        BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID)
-    };
-    fields.num_uuids16 = 1;
-    fields.uuids16_is_complete = 1;
+    fields.uuids128             = (ble_uuid128_t[]){ gatt_svr_svc_sec_test_uuid };
+    fields.num_uuids128         = 1;
+    fields.uuids128_is_complete = 1;
+
 
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0) {
         ESP_LOGE(TAG, "error setting advertisement data; rc=%d", rc);
         return;
+    }
+
+
+    memset(&rsp_fields, 0, sizeof rsp_fields);
+    const char *name = ble_svc_gap_device_name();
+    rsp_fields.name             = (uint8_t *)name;
+    rsp_fields.name_len         = strlen(name);
+    rsp_fields.name_is_complete = 1;
+
+    rc = ble_gap_adv_rsp_set_fields(&rsp_fields);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "error setting RSP fields; rc=%d", rc);
+        // you can still proceed—devices that don't do active scan will miss the name
     }
 
     /* Begin advertising. */

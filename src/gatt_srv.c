@@ -28,7 +28,6 @@
 #include "services/ans/ble_svc_ans.h"
 #include "esp_log.h"
 
-/** we should probably use these lol **/
 
 /* 59462f12-9543-9999-12c8-58b459a2712d */
 static const ble_uuid128_t gatt_svr_svc_sec_test_uuid =
@@ -56,13 +55,13 @@ gatt_svr_chr_access_sec_test(uint16_t conn_handle, uint16_t attr_handle,
 
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
-        /*** Service: Motor control. */
+        /*** Service: . */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = &gatt_svr_svc_sec_test_uuid.u,
         .characteristics = (struct ble_gatt_chr_def[])
         { {
                 /*** Characteristic: Controller bits */
-                .uuid = &gatt_svr_chr_sec_test_rand_uuid.u,
+                .uuid = &gatt_svr_chr_sec_test_static_uuid.u,
                 .access_cb = gatt_svr_chr_access_sec_test,
                 .flags = BLE_GATT_CHR_F_READ |
                 BLE_GATT_CHR_F_WRITE
