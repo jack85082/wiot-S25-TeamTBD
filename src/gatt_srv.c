@@ -27,6 +27,7 @@
 #include "bleprph.h"
 #include "services/ans/ble_svc_ans.h"
 #include "esp_log.h"
+#include "motor_driver.h"
 
 
 /* 59462f12-9543-9999-12c8-58b459a2712d */
@@ -127,12 +128,18 @@ gatt_svr_chr_access_sec_test(uint16_t conn_handle, uint16_t attr_handle,
                                 sizeof gatt_svr_sec_test_static_val);
             return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
 
-        case BLE_GATT_ACCESS_OP_WRITE_CHR:
+            case BLE_GATT_ACCESS_OP_WRITE_CHR:
             rc = gatt_svr_chr_write(ctxt->om,
                                     sizeof gatt_svr_sec_test_static_val,
                                     sizeof gatt_svr_sec_test_static_val,
                                     &gatt_svr_sec_test_static_val, NULL);
+            if (rc == 0) {
+                ESP_LOGI(TAG, "Write to characteristic succeeded: new value = 0x%02X", gatt_svr_sec_test_static_val);
+            } else {
+                ESP_LOGW(TAG, "Write to characteristic failed (rc=%d)", rc);
+            }
             return rc;
+        
 
         default:
             assert(0);
