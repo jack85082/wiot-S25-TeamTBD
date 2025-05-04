@@ -26,6 +26,9 @@
 #define LEFT_REVERSE_PWM_CHANNEL LEDC_CHANNEL_3
 #define RIGHT_REVERSE_PWM_CHANNEL LEDC_CHANNEL_4
 
+#define MAX_MOTOR_SPEED 255
+#define MOTOR_LOGIC_1 256
+
 /**
  * Registers the PWMs and GPIOs needed to control the motors, initializing them to an active, braked state.
  * Note this function must be called before the motors can be controlled.
@@ -44,27 +47,29 @@ void motor_coast();
 
 /**
  * Drive both motors forward at the desired speed
- * @param speed a number from 0 (stopped) to 255 (maximum speed)
+ * @param speed a number from 0 (minimum speed) to 255 (maximum speed)
  */
 void motor_forward(uint8_t speed);
 
 /**
  * Drive both motors in reverse at the desired speed
- * @param speed a number from 0 (stopped) to 255 (maximum speed)
+ * @param speed a number from 0 (minimum speed) to 255 (maximum speed)
  */
 void motor_reverse(uint8_t speed);
 
 /**
- * Drive the left motor at the desired speed while letting the right motor coast
- * @param speed a number from 0 (stopped) to 255 (maximum speed)
- */
-void motor_left(uint8_t speed);
-
-/**
- * Drive the right motor at the desired speed while letting the left motor coast
+ * Turns right at the desired speed
+ * Drives the left motor forward and the right motor in reverse
  * @param speed a number from 0 (stopped) to 255 (maximum speed)
  */
 void motor_right(uint8_t speed);
+
+/**
+ * Turns left at the desired speed
+ * Drives the right motor forward and the left motor in reverse
+ * @param speed a number from 0 (minimum speed) to 255 (maximum speed)
+ */
+void motor_left(uint8_t speed);
 
 /**
  * Enable/disable the DRV8962's low-power sleep mode

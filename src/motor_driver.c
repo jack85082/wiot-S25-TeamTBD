@@ -7,28 +7,28 @@ void motor_init() {
     left_forward.channel = LEFT_FORWARD_PWM_CHANNEL;
     left_forward.intr_type = LEDC_INTR_DISABLE;
     left_forward.timer_sel = LEDC_TIMER_1;
-    left_forward.duty = 256;
+    left_forward.duty = MOTOR_LOGIC_1;
 
     right_forward.gpio_num = IN4;
     right_forward.speed_mode = LEDC_LOW_SPEED_MODE;
     right_forward.channel = RIGHT_FORWARD_PWM_CHANNEL;
     right_forward.intr_type = LEDC_INTR_DISABLE;
     right_forward.timer_sel = LEDC_TIMER_1;
-    right_forward.duty = 256;
+    right_forward.duty = MOTOR_LOGIC_1;
 
     left_reverse.gpio_num = IN1;
     left_reverse.speed_mode = LEDC_LOW_SPEED_MODE;
     left_reverse.channel = LEFT_REVERSE_PWM_CHANNEL;
     left_reverse.intr_type = LEDC_INTR_DISABLE;
     left_reverse.timer_sel = LEDC_TIMER_1;
-    left_reverse.duty = 256;
+    left_reverse.duty = MOTOR_LOGIC_1;
 
     right_reverse.gpio_num = IN3;
     right_reverse.speed_mode = LEDC_LOW_SPEED_MODE;
     right_reverse.channel = RIGHT_REVERSE_PWM_CHANNEL;
     right_reverse.intr_type = LEDC_INTR_DISABLE;
     right_reverse.timer_sel = LEDC_TIMER_1;
-    right_reverse.duty = 256;
+    right_reverse.duty = MOTOR_LOGIC_1;
 
     ledc_timer_config_t timer = {0};
     timer.speed_mode = LEDC_LOW_SPEED_MODE;
@@ -86,19 +86,37 @@ void motor_init() {
     gpio_set_level(SLEEP, 1);
 }
 
+static void set_pwm_value(uint8_t pin, uint32_t value) {
+    ledc_channel_t channel;
+    switch(pin) {
+        case IN1:
+            channel = LEFT_REVERSE_PWM_CHANNEL;
+            break;
+        case IN2:
+            channel = LEFT_FORWARD_PWM_CHANNEL;
+            break;
+        case IN3:
+            channel = RIGHT_REVERSE_PWM_CHANNEL;
+            break;
+        case IN4:
+            channel = RIGHT_FORWARD_PWM_CHANNEL;
+            break;
+        default:
+            return;
+    }
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, value));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, channel));
+}
+
 void motor_brake() {
     gpio_set_level(EN1, 1);
     gpio_set_level(EN2, 1);
     gpio_set_level(EN3, 1);
     gpio_set_level(EN4, 1);
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL));
+    set_pwm_value(IN1, MOTOR_LOGIC_1);
+    set_pwm_value(IN2, MOTOR_LOGIC_1);
+    set_pwm_value(IN3, MOTOR_LOGIC_1);
+    set_pwm_value(IN4, MOTOR_LOGIC_1);
 }
 
 void motor_coast() {
@@ -113,14 +131,10 @@ void motor_forward(uint8_t speed) {
     gpio_set_level(EN2, 1);
     gpio_set_level(EN3, 1);
     gpio_set_level(EN4, 1);
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL, speed));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL, speed));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL));
+    set_pwm_value(IN1, MOTOR_LOGIC_1);
+    set_pwm_value(IN2, MAX_MOTOR_SPEED - speed);
+    set_pwm_value(IN3, MOTOR_LOGIC_1);
+    set_pwm_value(IN4, MAX_MOTOR_SPEED - speed);
 }
 
 void motor_reverse(uint8_t speed) {
@@ -128,36 +142,32 @@ void motor_reverse(uint8_t speed) {
     gpio_set_level(EN2, 1);
     gpio_set_level(EN3, 1);
     gpio_set_level(EN4, 1);
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL, speed));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL, speed));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL));
+    set_pwm_value(IN1, MAX_MOTOR_SPEED - speed);
+    set_pwm_value(IN2, MOTOR_LOGIC_1);
+    set_pwm_value(IN3, MAX_MOTOR_SPEED - speed);
+    set_pwm_value(IN4, MOTOR_LOGIC_1);
+}
+
+void motor_right(uint8_t speed) {
+    gpio_set_level(EN1, 1);
+    gpio_set_level(EN2, 1);
+    gpio_set_level(EN3, 1);
+    gpio_set_level(EN4, 1);
+    set_pwm_value(IN1, MOTOR_LOGIC_1);
+    set_pwm_value(IN2, MAX_MOTOR_SPEED - speed);
+    set_pwm_value(IN3, MAX_MOTOR_SPEED - speed);
+    set_pwm_value(IN4, MOTOR_LOGIC_1);
 }
 
 void motor_left(uint8_t speed) {
     gpio_set_level(EN1, 1);
     gpio_set_level(EN2, 1);
-    gpio_set_level(EN3, 0);
-    gpio_set_level(EN4, 0);
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL, speed));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEFT_REVERSE_PWM_CHANNEL));
-}
-
-void motor_right(uint8_t speed) {
-    gpio_set_level(EN1, 0);
-    gpio_set_level(EN2, 0);
     gpio_set_level(EN3, 1);
     gpio_set_level(EN4, 1);
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL, speed));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_FORWARD_PWM_CHANNEL));
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL, 256));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, RIGHT_REVERSE_PWM_CHANNEL));
+    set_pwm_value(IN1, MAX_MOTOR_SPEED - speed);
+    set_pwm_value(IN2, MOTOR_LOGIC_1);
+    set_pwm_value(IN3, MOTOR_LOGIC_1);
+    set_pwm_value(IN4, MAX_MOTOR_SPEED - speed);
 }
 
 void motor_sleep(bool sleep) {
