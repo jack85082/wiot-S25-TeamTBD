@@ -7,18 +7,17 @@
 #include "esp_err.h"
 
 // Pin definitions for DRV8962
-#define EN1 9
-#define EN2 10
-#define EN3 11
-#define EN4 12
+#define EN1 15
+#define EN2 13
+#define EN3 12
+#define EN4 14
 
-#define IN1 5
-#define IN2 6
-#define IN3 7
-#define IN4 8
+#define IN1 3
+#define IN2 2
+#define IN3 32
+#define IN4 33
 
-#define SLEEP 4
-#define FLT 13
+#define SLEEP 1
 
 // PWM channel definitions
 #define LEFT_FORWARD_PWM_CHANNEL LEDC_CHANNEL_1
